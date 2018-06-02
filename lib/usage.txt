@@ -43,6 +43,12 @@ $COMMAND prev
 $COMMAND completed
 
   List the completed levels.
+
+$COMMAND init <soln-file>
+
+  Initialize solution file, <soln-file>, with the problem statement at the top, for easy reference during development.
+
+  <soln-file> is required.
  
 $COMMAND reset
 

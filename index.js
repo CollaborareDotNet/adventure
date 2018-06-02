@@ -127,6 +127,9 @@ Shop.prototype.execute = function (args) {
         this.state.current = null;
         this.save('current');
     }
+    else if (cmd === 'init') {
+        this._initSolution(args);
+    }
     else if (!cmd || cmd === 'menu') {
         this.showMenu(this.options);
     }
@@ -134,6 +137,36 @@ Shop.prototype.execute = function (args) {
         console.log('unrecognized command: ' + cmd);
     }
 };
+
+Shop.prototype._initSolution = function(args){
+    let current = this.state.current;
+    let adv = (this.find(current));
+
+    let outputFileName = args[1];
+    if (!outputFileName){
+        return this._error('Solution file name is required.');
+    }
+
+    fs.access(outputFileName, function(err) {
+        if (!err) {
+            console.log(`It appears that ${outputFileName} might already exist? Not overwriting.`);
+            return;
+        }
+        else {
+            console.log(`Current challenge = ${current}`);
+
+            let outputFile = fs.createWriteStream(outputFileName);
+
+            let problemStatementFile = adv.fn().problemStatement;
+            problemStatementFile.on('end', () => console.log(`\nDone initializing solution file: ${outputFileName}!`));
+
+            problemStatementFile.pipe(outputFile);
+
+
+        }
+    });
+
+}
 
 Shop.prototype.add = function (name, fn) {
     this._adventures.push({ name: name, fn: fn });
@@ -285,7 +318,9 @@ Shop.prototype.showMenu = function (opts) {
 };
 
 Shop.prototype.save = function (key) {
-    fs.writeFile(this.files[key], JSON.stringify(this.state[key]));
+    fs.writeFile(this.files[key], JSON.stringify(this.state[key]), function (err) {
+        if (err) throw err;
+    });
 };
 
 Shop.prototype._error = function (msg) {
@@ -315,6 +350,7 @@ Shop.prototype._show = function (m) {
         ;
     }
 }
+
 
 function commandify (s) {
     return String(s).toLowerCase().replace(/\s+/g, '-');
